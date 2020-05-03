@@ -22,89 +22,44 @@ function setup() {
 
 function draw() {
   background(220);
-  noFill();
-  stroke(0, 50, 160);
-  strokeWeight(10);
-  // rect(125, 50, 350, 700, 87.5);
-  // ellipse(x, y, 50, 50);
-  //image(img, x, y, 54, 78);
-  strokeWeight(5);
-  line(125, height / 2 - 87.5, 475, height / 2 - 87.5);
-  line(125, height / 2 + 87.5, 475, height / 2 + 87.5);
-  ellipse(width/2, height/2, 87.5, 87.5);
-  //red
-  stroke(196, 2, 43);
-  // middle red line
-  line(125, height / 2, 475, height / 2);
-  //blue
-  stroke(0, 50, 160);
-  //center point
-  point(width / 2, height / 2);
-  // outermost box
-  rect(125, 50, 350, 700);
+  drawIceRink();
 
-
-
-  checkForAcceleration();
+  checkMovement();
   updatePosAndVelocity();
   checkCollisions(0.25);
   applyFriction(0.1);
-  rotate_and_draw_image(x, y, 32, 46, 0);
+  rotateAndDrawImage(x, y, 32, 46, 0);
 }
 
-function checkKeyPresses() {
-  // if nothing is pressed, zamboni stays last direction it was heading
-
-  // cancel ax and point up if both left and right
-
-  // cancel ay and point up if both up and down
-}
-
-function checkForAcceleration() {
+function checkMovement() {
   // acceleration is zero unless keys are pressed
   ax = 0;
   ay = 0;
 
-  //bools for easy logic
-  let U = keyIsDown(UP_ARROW);
-  let D = keyIsDown(DOWN_ARROW);
-  let L = keyIsDown(LEFT_ARROW);
-  let R = keyIsDown(RIGHT_ARROW);
+  // set key codes for inputs
+  let U = keyIsDown(87); // w
+  let L = keyIsDown(65); // a
+  let R = keyIsDown(68); // d
+  let BRAKE = keyIsDown(32); // spacebar
 
-  // Turn or thrust the ship depending on what key is pressed
-  if (L && R) {
-    ax = 0;
+  // Rotate if L or R, accel if U, or brake
+  // Special cases: L && R cancel each other, U && BRAKE means slower brake
+  if (L && !R) {
+    angle-= 0.75;
   }
-  else if (L) {
-    ax = -2;
-    angle = 90;
+  if (R && !L) {
+    angle+= 0.75;
   }
-  else if (R) {
-    ax = 2;
-    angle = 270;
-  }
-  if (U && D) {
-    ay = 0;
+
+  if (U && BRAKE) {
+    applyFriction(0.1);
   }
   else if (U) {
-    ay = -2;
-    angle = 180;
+    ax = -1.5;
+    ay = 1.5;
   }
-  else if (D) {
-    ay = 2;
-    angle = 0;
-  }
-  if (L && U) {
-    angle = 135;
-  }
-  else if (L && D) {
-    angle = 45;
-  }
-  else if (R && D) {
-    angle = 315;
-  }
-  else if (R && U) {
-    angle = 225;
+  else if (BRAKE) {
+    applyFriction(0.3);
   }
 }
 
@@ -114,8 +69,8 @@ function updatePosAndVelocity() {
   vy += ay * dt;
 
   // Update location
-  x += vx * dt;
-  y += vy * dt;
+  x += vx * dt * Math.sin(angle * (PI / 180));
+  y += vy * dt * Math.cos(angle * (PI / 180));
 }
 
 function applyFriction(frictionAmmount) {
@@ -149,7 +104,7 @@ function checkCollisions(bounceBackRatio) {
   }
 }
 
-function rotate_and_draw_image(img_x, img_y, img_width, img_height, img_angle){
+function rotateAndDrawImage(img_x, img_y, img_width, img_height, img_angle){
   imageMode(CENTER);
   translate(img_x+img_width/2, img_y+img_width/2);
   rotate(PI/180*angle);
@@ -157,4 +112,26 @@ function rotate_and_draw_image(img_x, img_y, img_width, img_height, img_angle){
   rotate(-PI / 180 * img_angle);
   translate(-(img_x+img_width/2), -(img_y+img_width/2));
   imageMode(CORNER);
+}
+
+function drawIceRink() {
+  noFill();
+  strokeWeight(5);
+
+  // circle at center and horizontal blue lines
+  stroke(0, 50, 160); // change to blue
+  ellipse(width/2, height/2, 87.5, 87.5);
+  line(125, height / 2 - 87.5, 475, height / 2 - 87.5);
+  line(125, height / 2 + 87.5, 475, height / 2 + 87.5);
+
+  // midddle red line
+  stroke(196, 2, 43); // change to red
+  line(125, height / 2, 475, height / 2);
+
+  // blue point at center
+  stroke(0, 50, 160); // change to blue
+  point(width / 2, height / 2);
+
+  // outermost box
+  rect(125, 50, 350, 700);
 }
